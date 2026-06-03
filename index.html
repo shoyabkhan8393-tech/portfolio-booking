@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>M4X Designer | Full Stack Developer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --accent: #00FF88;
+      --accent2: #0088FF;
+      --accent3: #A855F7;
+      --bg: #0a0a0f;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #e2e8f0;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background 2s ease;
+      padding-top: 90px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Optimized Animations — GPU accelerated (opacity + transform only) */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(25px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(0,255,136,0.15); }
+      50% { box-shadow: 0 0 30px rgba(0,255,136,0.3); }
+    }
+    @keyframes float {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+    @keyframes orbFloat {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px,-20px) scale(1.05); }
+    }
+
+    .bg-orbs {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.05;
+      transition: background 2s ease; will-change: transform;
+    }
+    .orb:nth-child(1) { width: 500px; height: 500px; top: -150px; left: -100px; background: var(--accent); animation: orbFloat 25s infinite ease-in-out; }
+    .orb:nth-child(2) { width: 400px; height: 400px; bottom: -120px; right: -80px; background: var(--accent2); animation: orbFloat 28s infinite ease-in-out reverse; }
+    .orb:nth-child(3) { width: 350px; height: 350px; top: 50%; left: 50%; background: var(--accent3); animation: orbFloat 22s infinite ease-in-out; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    .glass-card {
+      background: rgba(18,18,30,0.3);
+      border: 1px solid rgba(255,255,255,0.04); border-radius: 20px;
+      padding: 1.8rem; transition: transform 0.35s ease, border-color 0.3s ease;
+      will-change: transform;
+    }
+    .glass-card:hover {
+      border-color: rgba(255,255,255,0.12); transform: translateY(-5px);
+    }
+
+    .navbar {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+      padding: 0.9rem 2rem; display: flex; justify-content: space-between;
+      align-items: center;
+      background: rgba(10,10,18,0.9);
+      border-bottom: 2px solid transparent;
+      border-image: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3)) 1;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+      transition: background 2s ease;
+      animation: fadeInUp 0.5s ease;
+    }
+    .logo { color: #fff; font-weight: 800; font-size: 1.1rem; text-decoration: none; transition: transform 0.3s; }
+    .logo:hover { transform: scale(1.05); }
+    .logo .accent { color: var(--accent); transition: color 2s ease; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+    .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 0.85rem; transition: color 0.3s; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); transition: width 0.3s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after { width: 100%; }
+    .btn-nav {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0a0f !important; padding: 0.5rem 1.3rem; border-radius: 50px;
+      font-weight: 700 !important; transition: transform 0.3s !important;
+    }
+    .btn-nav:hover { transform: translateY(-3px); }
+    .btn-nav::after { display: none !important; }
+
+    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; z-index: 10000; transition: transform 0.3s; }
+    .hamburger:hover { transform: scale(1.1); }
+    .hamburger span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+
+    .mobile-menu {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+      background: var(--bg);
+      z-index: 9999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1.5rem;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .mobile-menu.active { opacity: 1; visibility: visible; }
+    .mobile-menu a { 
+      color: #fff; text-decoration: none; font-size: 1.4rem; font-weight: 700; 
+      padding: 0.8rem 2.5rem; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px; transition: all 0.3s; min-width: 200px; text-align: center;
+      animation: fadeInUp 0.4s ease forwards; opacity: 0;
+    }
+    .mobile-menu.active a:nth-child(2) { animation-delay: 0.08s; }
+    .mobile-menu.active a:nth-child(3) { animation-delay: 0.16s; }
+    .mobile-menu.active a:nth-child(4) { animation-delay: 0.24s; }
+    .mobile-menu.active a:nth-child(5) { animation-delay: 0.32s; }
+    .mobile-menu a:hover { color: var(--accent); border-color: var(--accent); }
+    .mobile-menu .close-btn {
+      position: absolute; top: 25px; right: 25px;
+      background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .mobile-menu .close-btn:hover { transform: rotate(90deg); }
+
+    .hero { padding: 2rem 0 2rem; text-align: center; animation: fadeInScale 0.6s ease; }
+    .dp-wrapper { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+    .dp-ring {
+      width: 170px; height: 170px; border-radius: 50%; padding: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+      background-size: 200% 200%;
+      animation: float 4s ease-in-out infinite alternate, glowPulse 4s infinite;
+      transition: background 2s ease;
+      will-change: transform;
+    }
+    .dp-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.08); }
+
+    .hero-tag {
+      background: rgba(0,255,136,0.06); color: var(--accent);
+      padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem;
+      font-weight: 600; display: inline-block; margin-bottom: 1.5rem;
+      border: 1px solid rgba(0,255,136,0.12); font-family: 'JetBrains Mono', monospace;
+      animation: fadeInUp 0.5s ease 0.1s both;
+    }
+
+    .about-card glass-card { max-width: 650px; margin: 0 auto 2rem; padding: 1.8rem; text-align: center; animation: fadeInUp 0.5s ease 0.2s both; }
+    .about-card h2 { color: #fff; margin-bottom: 0.6rem; font-size: 1.3rem; }
+    .about-card h2 span { color: var(--accent); }
+    .about-card p { color: #b0b8c8; font-size: 0.9rem; line-height: 1.6; }
+    .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 0.8rem; }
+    .about-badge { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; color: #b0b8c8; transition: all 0.3s; }
+    .about-badge:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900; color: #fff; line-height: 1.2; animation: fadeInUp 0.5s ease 0.3s both; }
+    .hero h1 .accent { color: var(--accent); }
+    .hero .typewriter { font-size: 0.9rem; color: #708090; margin: 0.8rem 0 1.5rem; font-family: 'JetBrains Mono', monospace; animation: fadeInUp 0.5s ease 0.4s both; }
+    .btn-primary {
+      background: var(--accent); color: #0a0a0f; padding: 0.8rem 1.8rem;
+      border-radius: 50px; text-decoration: none; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;
+      border: none; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 15px rgba(0,255,136,0.2);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,136,0.35); }
+    .btn-outline {
+      border: 1.5px solid rgba(255,255,255,0.2); color: #fff;
+      padding: 0.8rem 1.8rem; border-radius: 50px; text-decoration: none;
+      font-weight: 600; font-size: 0.9rem; display: inline-flex;
+      align-items: center; gap: 0.5rem; background: transparent;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-outline:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    section { padding: 3.5rem 0; }
+    .section-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 2rem; text-align: center; color: #fff; }
+    .section-title span { color: var(--accent); }
+
+    .tech-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 450px; margin: 0 auto; text-align: center; }
+    .tech-item { padding: 1.2rem 0.5rem; transition: transform 0.3s; }
+    .tech-item:hover { transform: translateY(-5px); }
+    .tech-item i { font-size: 1.8rem; color: var(--accent); margin-bottom: 0.4rem; }
+    .tech-item p { font-size: 0.8rem; color: #b0b8c8; font-weight: 500; }
+
+    .skills-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; max-width: 650px; margin: 0 auto; }
+    .skill-tag {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      color: #fff; padding: 0.5rem 1.1rem; border-radius: 50px;
+      font-weight: 500; font-size: 0.82rem; transition: all 0.3s;
+    }
+    .skill-tag:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-3px); }
+
+    .create-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .create-card { text-align: center; padding: 0; overflow: hidden; transition: transform 0.35s; }
+    .create-card:hover { transform: translateY(-8px); }
+    .create-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 16px 16px 0 0; background: #1a1a2e; transition: transform 0.4s; }
+    .create-card:hover img { transform: scale(1.05); }
+    .create-info { padding: 1.2rem; }
+    .create-info h3 { color: #fff; font-size: 1rem; margin-bottom: 0.3rem; }
+    .create-info p { color: #708090; font-size: 0.8rem; }
+
+    .contact-section { text-align: center; padding: 3rem 0; }
+    .contact-section::before, .contact-section::after {
+      content: ''; display: block; width: 100%; height: 1px;
+      margin: 0 auto; background: rgba(255,255,255,0.3);
+      animation: fadeInScale 0.6s ease;
+    }
+    .contact-section::before { margin-bottom: 2.5rem; }
+    .contact-section::after { margin-top: 2.5rem; }
+    .contact-section .inquiry-text { color: #708090; margin-bottom: 2rem; font-size: 0.95rem; }
+    .contact-row { display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap; }
+    .contact-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: #b0b8c8; font-size: 0.9rem;
+      font-weight: 500; padding: 0.5rem 1.5rem; transition: all 0.3s; border-radius: 50px;
+    }
+    .contact-link:hover { color: var(--accent); transform: translateY(-3px); }
+    .contact-link i { font-size: 1.2rem; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; animation: fadeInScale 0.25s ease; }
+    .modal-box { background: rgba(18,18,30,0.96); border: 1px solid rgba(255,255,255,0.06); border-radius: 22px; padding: 2rem; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #fff; font-size: 1.6rem; cursor: pointer; transition: transform 0.3s; }
+    .modal-close:hover { transform: rotate(90deg); }
+    .modal-box h2 { color: #fff; margin-bottom: 0.3rem; font-size: 1.4rem; }
+    .modal-box h2 span { color: var(--accent); }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; color: #b0b8c8; font-weight: 500; margin-bottom: 0.3rem; font-size: 0.85rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 0.9rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: all 0.3s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 12px rgba(0,255,136,0.08); }
+
+    .website-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; margin-bottom: 1.2rem; }
+    .type-card { background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 0.6rem; text-align: center; cursor: pointer; transition: all 0.3s; color: #b0b8c8; }
+    .type-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-3px); }
+    .type-card.selected { border-color: var(--accent); background: rgba(0,255,136,0.05); color: var(--accent); }
+    .type-card svg { width: 24px; height: 24px; margin: 0 auto 0.3rem; display: block; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .type-card span { font-size: 0.68rem; font-weight: 600; }
+
+    .price-estimate { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem; text-align: center; margin: 1rem 0; }
+    .price-range { display: flex; justify-content: space-between; color: #708090; font-size: 0.75rem; margin-bottom: 0.4rem; }
+    .price-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+    .price-value small { font-size: 0.8rem; color: #708090; }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+
+    .btn-full { width: 100%; padding: 0.85rem; background: var(--accent); color: #0a0a0f; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: transform 0.3s, box-shadow 0.3s; }
+    .btn-full:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,255,136,0.3); }
+    .success-msg { display: none; text-align: center; color: var(--accent); font-weight: 600; margin-top: 0.8rem; animation: fadeInScale 0.3s ease; }
+
+    .copyright-bar { text-align: center; padding: 1.2rem; color: #475569; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 2rem; }
+    .copyright-bar a { color: #708090; text-decoration: none; transition: color 0.3s; }
+    .copyright-bar a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero h1 { font-size: 1.6rem; }
+      .about-card { text-align: center; }
+      body { padding-top: 85px; }
+    }
+    @media (max-width: 600px) {
+      .contact-row { gap: 0.8rem; }
+      .contact-link { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="close-btn" id="mobileCloseBtn">&times;</button>
+    <a href="#home">Home</a>
+    <a href="#skills">My Skills</a>
+    <a href="#create">What I Create</a>
+    <a href="#contact">Contact</a>
+    <a href="#" id="mobileBookBtn" style="color:var(--accent); border-color: var(--accent);">Book Now</a>
+  </div>
+
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal-box">
+      <button class="modal-close" id="modalCloseBtn">&times;</button>
+      
+      <!-- Native Booking Form Wrapper -->
+      <div id="modalFormContent">
+        <h2>Book Your <span>Project</span></h2>
+        <p style="color:#708090;margin-bottom:1.2rem;font-size:0.85rem;">Fill details — we'll get back to you</p>
+        <form id="orderForm">
+          <div class="form-group"><label>Your Name *</label><input type="text" id="clientName" placeholder="John Doe" required></div>
+          <div class="form-group"><label>Business Name *</label><input type="text" id="businessName" placeholder="Your Brand" required></div>
+          <div class="form-group"><label>WhatsApp Number *</label><input type="tel" id="clientPhone" placeholder="+91 98765 43210" required></div>
+          <div class="form-group"><label>Website Type</label></div>
+          <div class="website-types" id="typeGrid">
+            <div class="type-card selected" data-type="Portfolio" data-price="3000"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg><span>Portfolio</span></div>
+            <div class="type-card" data-type="Business" data-price="4000"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><span>Business</span></div>
+            <div class="type-card" data-type="E-Commerce" data-price="5500"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span>E-Commerce</span></div>
+            <div class="type-card" data-type="Booking System" data-price="5000"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Booking</span></div>
+            <div class="type-card" data-type="Custom Web App" data-price="7000"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Custom App</span></div>
+            <div class="type-card" data-type="Landing Page" data-price="2500"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Landing</span></div>
+          </div>
+          <div class="form-group"><label>Additional Details</label><textarea id="details" rows="2" placeholder="Any specific requirements..."></textarea></div>
+          <div class="price-estimate">
+            <p style="color:#b0b8c8;margin-bottom:0.4rem;font-size:0.8rem;">💰 Estimated Budget</p>
+            <div class="price-range"><span>₹2,500</span><span>₹7,000</span></div>
+            <input type="range" min="2500" max="7000" value="3000" step="500" id="priceSlider" oninput="updatePrice()">
+            <div class="price-value" id="priceDisplay">₹3,000 <small>approx</small></div>
+          </div>
+          <button type="submit" class="btn-full" style="display:flex; align-items:center; justify-content:center; gap:0.5rem;">🚀 Submit Booking Lead</button>
+          <p class="success-msg" id="orderSuccess">✅ Details Prepared! Moving to confirmation...</p>
+        </form>
+      </div>
+
+      <!-- Native Messaging Success Content (Silent Implementation) -->
+      <div id="bookingSuccessScreen" style="display:none; text-align:center; padding:1rem 0; animation:fadeInScale 0.35s ease;">
+        <div style="font-size:3.5rem; margin-bottom:1rem; animation: float 3s ease-in-out infinite alternate;">🎉</div>
+        <h3 style="font-size:1.4rem; color:#fff; margin-bottom:0.6rem; font-weight:800;">Booking Confirmed!</h3>
+        <p style="color:#b0b8c8; font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">Thank you! Your project details have been received silently. Shoyab Khan will get in touch with you shortly.</p>
+        
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:15px; padding:1.2rem; margin-bottom:1.8rem; text-align:left;">
+          <p style="font-size:0.75rem; color:#708090; margin-bottom:0.6rem; font-family:'JetBrains Mono',monospace; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:0.4rem; letter-spacing:1px; text-transform:uppercase;">Booking Summary</p>
+          <p style="font-size:0.85rem; color:#fff; margin-bottom:0.4rem; display:flex; justify-content:space-between;"><span>👤 Client:</span> <strong id="summaryName" style="color:var(--accent);">John</strong></p>
+          <p style="font-size:0.85rem; color:#fff; margin-bottom:0.4rem; display:flex; justify-content:space-between;"><span>🏢 Brand:</span> <strong id="summaryBusiness">Brand</strong></p>
+          <p style="font-size:0.85rem; color:#fff; margin-bottom:0.4rem; display:flex; justify-content:space-between;"><span>💻 Project:</span> <strong id="summaryType">Portfolio</strong></p>
+          <p style="font-size:0.85rem; color:#fff; margin-bottom:0rem; display:flex; justify-content:space-between;"><span>💰 Budget:</span> <strong id="summaryBudget" style="color:var(--accent2);">₹3,000</strong></p>
+        </div>
+        
+        <button onclick="closeOrder()" class="btn-full" style="display:flex; align-items:center; justify-content:center; gap:0.6rem; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#0a0a0f; font-size:1rem; text-decoration:none; padding:0.95rem; border-radius:12px; font-weight:800; border:none; transition:transform 0.3s; cursor:pointer;">
+          👍 Close Window
+        </button>
+        <p style="color:#708090; font-size:0.75rem; margin-top:0.8rem; font-family:'JetBrains Mono',monospace;">Delivered securely to server • Instant confirmation</p>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <a href="#" class="logo">&lt;<span class="accent">M4X</span> DESIGNER/&gt;</a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#create">What I Create</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#" class="btn-nav" id="desktopBookBtn">Book Now</a></li>
+    </ul>
+    <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="container">
+    <section id="home" class="hero">
+      <div class="dp-wrapper">
+        <div class="dp-ring">
+          <img src="https://i.postimg.cc/2yZnML72/Screenshot-2026-06-01-11-36-55-63-a7a72a2184549214e53884b5c1dfc244.png" alt="M4X Designer" loading="eager" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:3rem;font-weight:900;background:#1a1a2e;border-radius:50%;>M4X</div>'">
+        </div>
+      </div>
+      <div class="hero-tag">&lt;full-stack-developer /&gt;</div>
+      <div class="about-card glass-card">
+        <h2>👋 Hi, I'm <span>Shoyab Khan</span></h2>
+        <p>A passionate <strong>Full Stack Developer</strong> from Rajasthan, India. I build modern, scalable web applications using the MERN stack and Supabase. I transform complex problems into elegant digital solutions.</p>
+        <div class="badge-row">
+          <span class="about-badge">🎓 B.A. Student</span>
+          <span class="about-badge">💻 Self-taught</span>
+          <span class="about-badge">🚀 Freelancer</span>
+        </div>
+      </div>
+      <h1>Building <span class="accent">Digital</span><br>Solutions That Matter</h1>
+      <p class="typewriter">&gt; MERN Stack • Supabase • Node.js • React</p>
+      <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="#create" class="btn-primary">View My Work</a>
+        <button class="btn-outline" id="heroBookBtn">Book Now</button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">&lt;<span>Tech Stack</span>/&gt;</h2>
+      <div class="tech-grid">
+        <div class="glass-card tech-item"><i class="fab fa-html5"></i><p>HTML5</p></div>
+        <div class="glass-card tech-item"><i class="fab fa-css3-alt"></i><p>CSS3</p></div>
+        <div class="glass-card tech-item"><i class="fab fa-js"></i><p>JavaScript</p></div>
+        <div class="glass-card tech-item"><i class="fab fa-react"></i><p>React</p></div>
+        <div class="glass-card tech-item"><i class="fab fa-node-js"></i><p>Node.js</p></div>
+        <div class="glass-card tech-item"><i class="fab fa-git-alt"></i><p>Git</p></div>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2 class="section-title">&lt;<span>Skills</span>/&gt;</h2>
+      <div class="skills-tags">
+        <span class="skill-tag">Frontend Development</span>
+        <span class="skill-tag">Backend Architecture</span>
+        <span class="skill-tag">Database Design</span>
+        <span class="skill-tag">API Integration</span>
+        <span class="skill-tag">UI/UX Design</span>
+        <span class="skill-tag">Responsive Design</span>
+        <span class="skill-tag">Git & Version Control</span>
+        <span class="skill-tag">Cloud Deployment</span>
+      </div>
+    </section>
+
+    <section id="create">
+      <h2 class="section-title">&lt;<span>What I Can Create</span>/&gt;</h2>
+      <div class="create-grid">
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1522199755839-a2bacb67c546?w=600" alt="Portfolio" loading="lazy"><div class="create-info"><h3>Portfolio Websites</h3><p>Stunning personal brand sites</p></div></div>
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600" alt="Landing" loading="lazy"><div class="create-info"><h3>Landing Pages</h3><p>High-converting campaign pages</p></div></div>
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600" alt="E-Commerce" loading="lazy"><div class="create-info"><h3>E-Commerce Stores</h3><p>Complete shopping experiences</p></div></div>
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600" alt="Booking" loading="lazy"><div class="create-info"><h3>Booking Systems</h3><p>Appointment & reservation apps</p></div></div>
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600" alt="Business" loading="lazy"><div class="create-info"><h3>Business Websites</h3><p>Professional company sites</p></div></div>
+        <div class="glass-card create-card"><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600" alt="Custom" loading="lazy"><div class="create-info"><h3>Custom Web Apps</h3><p>Tailored solutions</p></div></div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+      <h2 class="section-title">&lt;<span>Contact</span>/&gt;</h2>
+      <p class="inquiry-text">For any inquiries or project discussions, feel free to reach out.</p>
+      <div class="contact-row">
+        <a href="https://wa.me/917568308619" target="_blank" class="contact-link"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        <a href="https://instagram.com/m4x.designer_786" target="_blank" class="contact-link"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="tel:+917568308619" class="contact-link"><i class="fas fa-phone"></i> Call</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="copyright-bar">&copy; 2026 <a href="#">M4X Designer</a>. All rights reserved.</div>
+
+  <script>
+    const themes = [
+      { accent: '#00FF88', accent2: '#0088FF', accent3: '#A855F7', bg: '#0a0a0f' },
+      { accent: '#0088FF', accent2: '#A855F7', accent3: '#00FF88', bg: '#0a0f12' },
+      { accent: '#A855F7', accent2: '#00FF88', accent3: '#0088FF', bg: '#0f0a12' }
+    ];
+    let idx = 0;
+    function apply(t) {
+      document.documentElement.style.setProperty('--accent', t.accent);
+      document.documentElement.style.setProperty('--accent2', t.accent2);
+      document.documentElement.style.setProperty('--accent3', t.accent3);
+      document.documentElement.style.setProperty('--bg', t.bg);
+      document.body.style.background = t.bg;
+    }
+    setInterval(() => { idx = (idx + 1) % 3; apply(themes[idx]); }, 6000);
+
+    const hamburger = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+    hamburger.addEventListener('click', () => { hamburger.classList.add('active'); mobileMenu.classList.add('active'); document.body.style.overflow = 'hidden'; });
+    function closeMenu() { hamburger.classList.remove('active'); mobileMenu.classList.remove('active'); document.body.style.overflow = ''; }
+    mobileCloseBtn.addEventListener('click', closeMenu);
+    document.querySelectorAll('.mobile-menu a').forEach(link => link.addEventListener('click', closeMenu));
+
+    function openOrder() { 
+      document.getElementById('modalFormContent').style.display = 'block';
+      document.getElementById('bookingSuccessScreen').style.display = 'none';
+      const orderForm = document.getElementById('orderForm');
+      if (orderForm) orderForm.reset();
+      document.getElementById('orderModal').classList.add('active'); 
+      document.body.style.overflow = 'hidden'; 
+    }
+    function closeOrder() { document.getElementById('orderModal').classList.remove('active'); document.body.style.overflow = ''; }
+    document.getElementById('desktopBookBtn').addEventListener('click', openOrder);
+    document.getElementById('heroBookBtn').addEventListener('click', openOrder);
+    document.getElementById('mobileBookBtn').addEventListener('click', openOrder);
+    document.getElementById('modalCloseBtn').addEventListener('click', closeOrder);
+    document.getElementById('orderModal').addEventListener('click', function(e) { if(e.target===this) closeOrder(); });
+
+    let selectedPrice = 3000;
+    document.querySelectorAll('.type-card').forEach(c => c.addEventListener('click', function() {
+      document.querySelectorAll('.type-card').forEach(x => x.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedPrice = parseInt(this.dataset.price);
+      document.getElementById('priceSlider').value = selectedPrice;
+      updatePrice();
+    }));
+    function updatePrice() { document.getElementById('priceDisplay').innerHTML = '₹' + document.getElementById('priceSlider').value + ' <small>approx</small>'; selectedPrice = parseInt(document.getElementById('priceSlider').value); }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('clientName').value.trim();
+      const business = document.getElementById('businessName').value.trim();
+      const phone = document.getElementById('clientPhone').value.trim();
+      const type = document.querySelector('.type-card.selected').dataset.type;
+      const details = document.getElementById('details').value.trim();
+      if(!name||!business||!phone) return alert('Fill required fields');
+      
+      console.log('Lead Captured Silently:', { name, business, phone, type, price: selectedPrice, details });
+
+      // Update success state summary elements directly in the native success card
+      document.getElementById('summaryName').innerText = name;
+      document.getElementById('summaryBusiness').innerText = business;
+      document.getElementById('summaryType').innerText = type;
+      document.getElementById('summaryBudget').innerText = '₹' + selectedPrice.toLocaleString();
+
+      // Send standard background request - the server handles CallMeBot WhatsApp silently in the background!
+      fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          clientName: name, 
+          businessName: business, 
+          clientPhone: phone, 
+          projectType: type, 
+          budget: selectedPrice, 
+          details: details 
+        })
+      }).catch(err => console.error('Silent delivery failed:', err));
+
+      // Show instant inline visual feedback inside the modal before displaying the full summary
+      document.getElementById('orderSuccess').style.display = 'block';
+      
+      setTimeout(() => {
+        document.getElementById('orderSuccess').style.display = 'none';
+        document.getElementById('modalFormContent').style.display = 'none';
+        document.getElementById('bookingSuccessScreen').style.display = 'block';
+      }, 800);
+    });
+  </script>
+</body>
+</html>
